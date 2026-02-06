@@ -1,40 +1,58 @@
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-var erreur = "erreur";
-console.log(erreur);
-const app = express();
+"use strict";
+
+const express = require("express"),
+  fs = require("fs"),
+  path = require("path"),
+  app = express();
+
+const JSON_INDENT = 2;
+const HTTP_OK = 200;
+const HTTP_BAD_REQUEST = 400;
+const DEFAULT_PORT = 3000;
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// serve static assets (public/style.css)
+// Serve static assets (public/style.css)
 app.use(express.static(path.join(__dirname, "public")));
 
-// Le stockage "persistant" attendu : un fichier monté sur un volume
-const DATA_DIR = process.env.DATA_DIR || "./data";
-const DATA_FILE = path.join(DATA_DIR, "notes.json");
+// Le stockage "persistant" attendu : un fichier monte sur un volume
+const DATA_DIR = process.env.DATA_DIR || "./data",
+  DATA_FILE = path.join(DATA_DIR, "notes.json");
 
-function ensureStore() {
+const ensureStore = function () {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ notes: [] }, null, 2));
+    fs.writeFileSync(
+      DATA_FILE,
+      JSON.stringify({ notes: [] }, null, JSON_INDENT),
+    );
   }
-}
+};
 
-function readNotes() {
+const readNotes = function () {
   ensureStore();
   const raw = fs.readFileSync(DATA_FILE, "utf-8");
   return JSON.parse(raw).notes || [];
-}
+};
 
-function writeNotes(notes) {
+const writeNotes = function (notes) {
   ensureStore();
-  fs.writeFileSync(DATA_FILE, JSON.stringify({ notes }, null, 2));
-}
+  fs.writeFileSync(DATA_FILE, JSON.stringify({ notes }, null, JSON_INDENT));
+};
+
+const escapeHtml = function (text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+};
 
 app.get("/", (req, res) => {
-  const notes = readNotes();
-  const html = `
+  const notes = readNotes(),
+    html = `
     <!doctype html>
     <html>
         <head>
@@ -51,37 +69,32 @@ app.get("/", (req, res) => {
             <button>Ajouter</button>
           </form>
           <h2>Notes</h2>
-          <ul class="notes">${notes.map(n => `<li>${escapeHtml(n)}</li>`).join("")}</ul>
+          <ul class="notes">${notes
+            .map((note) => `<li>${escapeHtml(note)}</li>`)
+            .join("")}</ul>
           <p><small>Stockage: ${DATA_FILE}</small></p>
         </main>
       </body>
     </html>
   `;
-  res.status(200).send(html);
+  res.status(HTTP_OK).send(html);
 });
 
 app.post("/notes", (req, res) => {
   const text = (req.body.text || "").trim();
-  if (!text) return res.status(400).send("Texte vide");
+  if (!text) {
+    return res.status(HTTP_BAD_REQUEST).send("Texte vide");
+  }
 
   const notes = readNotes();
-  notes.unshift(`${new Date().toISOString()} — ${text}`);
+  notes.unshift(`${new Date().toISOString()} - ${text}`);
   writeNotes(notes);
 
-  // redirection vers /
-  res.redirect("/");
+  // Redirection vers /
+  return res.redirect("/");
 });
 
-app.get("/health", (req, res) => res.status(200).json({ ok: true }));
+app.get("/health", (req, res) => res.status(HTTP_OK).json({ ok: true }));
 
-const port = Number(process.env.PORT || 3000);
-app.listen(port, () => console.log(`Listening on :${port}`));
-
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+const port = Number(process.env.PORT || DEFAULT_PORT);
+app.listen(port, function () {});
