@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 var erreur = "erreur";
+console.log(erreur);
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
