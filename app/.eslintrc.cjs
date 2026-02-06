@@ -3,7 +3,7 @@ module.exports = {
     node: true,
     es2021: true,
   },
-  extends: ["eslint:all"],
+  "extends": ["airbnb", "plugin:react-hooks/recommended"],
   parserOptions: {
     ecmaVersion: "latest",
   },
