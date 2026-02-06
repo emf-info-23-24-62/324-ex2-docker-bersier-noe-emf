@@ -22,9 +22,6 @@ jobs:
       - name: Install Node.js dependencies
         working-directory: ./app
         run: npm ci
-
-      - name: init lint
-        run: npm init @eslint/config
         
       - name: Run linters
         working-directory: ./app
