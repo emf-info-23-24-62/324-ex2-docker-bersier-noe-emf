@@ -39,8 +39,6 @@ jobs:
 
       - name: Tag and push images to ACR
         run: |
-          for i in $(seq 1 100); do
-            docker tag notes:bersier-kolly ${{ secrets.ACR_LOGIN_SERVER }}/notes:bersier-kolly-$i
-            docker push ${{ secrets.ACR_LOGIN_SERVER }}/notes:bersier-kolly-$i
-          done
+            docker tag notes:bersier-kolly ${{ secrets.ACR_LOGIN_SERVER }}/notes:bersier-kolly
+            docker push ${{ secrets.ACR_LOGIN_SERVER }}/notes:bersier-kolly
 
