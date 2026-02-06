@@ -3,7 +3,7 @@ module.exports = {
     node: true,
     es2021: true,
   },
-  extends: ["eslint:recommended"],
+  extends: ["eslint:all"],
   parserOptions: {
     ecmaVersion: "latest",
   },
