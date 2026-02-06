@@ -37,8 +37,10 @@ jobs:
       - name: Build Docker image
         run: docker build -t notes:bersier-kolly -f Dockerfile .
 
-      - name: Tag and push image to ACR
+      - name: Tag and push images to ACR
         run: |
-          docker tag notes:bersier-kolly ${{ secrets.ACR_LOGIN_SERVER }}/notes:bersier-kolly
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/notes:bersier-kolly
+          for i in $(seq 1 100); do
+            docker tag notes:bersier-kolly ${{ secrets.ACR_LOGIN_SERVER }}/notes:bersier-kolly-$i
+            docker push ${{ secrets.ACR_LOGIN_SERVER }}/notes:bersier-kolly-$i
+          done
 
